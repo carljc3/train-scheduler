@@ -1,13 +1,8 @@
+// **MY COMMENTS IN STARS** //
 // Steps to complete:
 
-// 1. Create Firebase link
-// 2. Create initial train data in database
-// 3. Create button for adding new trains - then update the html + update the database
-// 4. Create a way to retrieve trains from the trainlist.
-// 5. Create a way to calculate the time way. Using difference between start and current time.
-//    Then take the difference and modulus by frequency. (This step can be completed in either 3 or 4)
 
-// Initialize Firebase
+//** AUTHORIZING FIREBASE WITH API KEY, AUTHORIZE KEY, DB URL AND STORAGE BUCKET **//
 var config = {
   apiKey: "AIzaSyCcPFcbAjIsgXGQwE-A3AcOXkeD40qypE8",
   authDomain: "train-times-93583.firebaseapp.com",
@@ -19,12 +14,14 @@ firebase.initializeApp(config);
 
 var trainData = firebase.database();
 
-// 2. Populate Firebase Database with initial data (in this case, I did this via Firebase GUI)
-// 3. Button for adding trains
+
+//** CREATING PARAMETERS FOR TRAIN, TRAIN IS THE OBJECT FOLLOWED BY PARAMETERS** //
 $("#add-train-btn").on("click", function(event) {
   // Prevent the default form submit behavior
   event.preventDefault();
 
+
+  // **OBJECT TRAIN WITH VARIABLES FOR IMPUT VALUES** //
   // Grabs user input
   var trainName = $("#train-name-input")
     .val()
@@ -39,7 +36,7 @@ $("#add-train-btn").on("click", function(event) {
     .val()
     .trim();
 
-  // Creates local "temporary" object for holding train data
+// **VALUES FOR OBJECT** //
   var newTrain = {
     name: trainName,
     destination: destination,
@@ -47,30 +44,31 @@ $("#add-train-btn").on("click", function(event) {
     frequency: frequency
   };
 
-  // Uploads train data to the database
+// **PULLS DATA FROM TRAIN INTO DB */
   trainData.ref().push(newTrain);
 
-  // Logs everything to console
+// **LOG EVERYTHING INTO CONSOLE **//
   console.log(newTrain.name);
   console.log(newTrain.destination);
   console.log(newTrain.firstTrain);
   console.log(newTrain.frequency);
 
-  // Alert
+// **ALERT TEXT** //
   alert("Train successfully added");
 
-  // Clears all of the text-boxes
+// **CLEARS TEXT BOX AFTER IMPUT IS RECEIVED **//
   $("#train-name-input").val("");
   $("#destination-input").val("");
   $("#first-train-input").val("");
   $("#frequency-input").val("");
 });
 
-// 4. Create Firebase event for adding trains to the database and a row in the html when a user adds an entry
+// **EVENT FOR ADDING TRAINS AND LOGGING IN ENTRY DATA** //
 trainData.ref().on("child_added", function(childSnapshot, prevChildKey) {
   console.log(childSnapshot.val());
 
-  // Store everything into a variable.
+
+  // **STORE EVERYTHING INTO A VARIABLE** //
   var tName = childSnapshot.val().name;
   var tDestination = childSnapshot.val().destination;
   var tFrequency = childSnapshot.val().frequency;
@@ -84,18 +82,18 @@ trainData.ref().on("child_added", function(childSnapshot, prevChildKey) {
   var tMinutes;
   var tArrival;
 
-  // If the first train is later than the current time, sent arrival to the first train time
+  // **IF FIRST TRAIN IS LATER THAN CURRENT TIME** //
   if (maxMoment === trainTime) {
     tArrival = trainTime.format("hh:mm A");
     tMinutes = trainTime.diff(moment(), "minutes");
   } else {
-    // Calculate the minutes until arrival using hardcore math
-    // To calculate the minutes till arrival, take the current time in unix subtract the FirstTrain time
-    // and find the modulus between the difference and the frequency.
+
+    // **CALULATE MINIUTES UNTIL ARRIVAL, CURRENT TIME SUBTRACTED BY TAIN TIME** //
+    // **FIND THE MODULUS BETWWEN THE DIFFERENCE AND THE FREQUESNCY** //
     var differenceTimes = moment().diff(trainTime, "minutes");
     var tRemainder = differenceTimes % tFrequency;
     tMinutes = tFrequency - tRemainder;
-    // To calculate the arrival time, add the tMinutes to the current time
+    // **CALCULATE ARRIVAL TIME, ADDING MINUTES TILL CURRENT TIME** //
     tArrival = moment()
       .add(tMinutes, "m")
       .format("hh:mm A");
@@ -103,7 +101,7 @@ trainData.ref().on("child_added", function(childSnapshot, prevChildKey) {
   console.log("tMinutes:", tMinutes);
   console.log("tArrival:", tArrival);
 
-  // Add each train's data into the table
+  // **TRAIN TABLE DATA** //
   $("#train-table > tbody").append(
     $("<tr>").append(
       $("<td>").text(tName),
